@@ -1,0 +1,12 @@
+﻿securityPolicies:
+- namespace: kube-lease
+  policies:
+  - "apparmor"
+  - "seccomp"
+  - "privileged"
+  - "volumes_restricted"
+- namespace: default
+  policies:
+  - "apparmor"
+  - "fsGroup"
+  - "sysctls"

@@ -1,0 +1,10 @@
+﻿securityPolicies:
+- namespace: kube-system
+  policies:
+  - "apparmor"
+  - "seccomp"
+  - "privileged"
+- namespace: default
+  policies:
+  - "apparmor"
+  - "fsGroup"
