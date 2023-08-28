@@ -40,6 +40,6 @@ func fixturesEphemeralReadOnly() Case {
 }
 
 func init() {
-	fixturesMap["readOnly"] = []func() Case{fixturesReadOnly}
-	fixturesMap["ephemeralreadOnly"] = []func() Case{fixturesEphemeralReadOnly}
+	fixturesMap[readOnly] = []func() Case{fixturesReadOnly}
+	fixturesMap[ephemeralReadOnly] = []func() Case{fixturesEphemeralReadOnly}
 }

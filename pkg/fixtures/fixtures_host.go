@@ -88,9 +88,9 @@ func fixturesEphemeralHostPorts() Case {
 }
 
 func init() {
-	fixturesMap["hostpid"] = []func() Case{fixturesHostPID}
-	fixturesMap["hostipc"] = []func() Case{fixturesHostIPC}
-	fixturesMap["hostnetwork"] = []func() Case{fixturesHostNetwork}
-	fixturesMap["hostports"] = []func() Case{fixturesConainerHostPorts}
-	fixturesMap["ephemeralhostports"] = []func() Case{fixturesEphemeralHostPorts}
+	fixturesMap[hostpid] = []func() Case{fixturesHostPID}
+	fixturesMap[hostipc] = []func() Case{fixturesHostIPC}
+	fixturesMap[hostnetwork] = []func() Case{fixturesHostNetwork}
+	fixturesMap[hostports] = []func() Case{fixturesConainerHostPorts}
+	fixturesMap[ephemeralHostports] = []func() Case{fixturesEphemeralHostPorts}
 }

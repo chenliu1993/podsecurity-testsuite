@@ -87,12 +87,16 @@ func fixturesEphemeralCapabilitesRestricted() Case {
 }
 
 func init() {
-	fixturesMap["capabilities"] = []func() Case{
+	fixturesMap[capabilitiesBaseline] = []func() Case{
 		fixturesCapabilitiesBaseline,
+	}
+	fixturesMap[ephemeralCapabilitiesBaseline] = []func() Case{
+		fixturesEphemeralCapabilitesBaseline,
+	}
+	fixturesMap[capabilitiesRestricted] = []func() Case{
 		fixturesCapabilitiesRestricted,
 	}
-	fixturesMap["ephemeral-capabilities"] = []func() Case{
-		fixturesEphemeralCapabilitesBaseline,
+	fixturesMap[ephemeralCapabilitiesRestricted] = []func() Case{
 		fixturesEphemeralCapabilitesRestricted,
 	}
 }

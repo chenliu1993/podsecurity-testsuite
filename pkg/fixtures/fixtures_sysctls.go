@@ -21,5 +21,5 @@ func fixturesSysctls() Case {
 }
 
 func init() {
-	fixturesMap["sysctls"] = []func() Case{fixturesSysctls}
+	fixturesMap[sysctls] = []func() Case{fixturesSysctls}
 }

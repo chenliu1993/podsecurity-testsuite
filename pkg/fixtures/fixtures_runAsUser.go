@@ -43,6 +43,6 @@ func fixturesEphemeralRunAsUser() Case {
 }
 
 func init() {
-	fixturesMap["runAsUser"] = []func() Case{fixturesRunAsUser}
-	fixturesMap["ephemeralrunAsUser"] = []func() Case{fixturesEphemeralRunAsUser}
+	fixturesMap[runAsUser] = []func() Case{fixturesRunAsUser}
+	fixturesMap[ephemeralrunAsUser] = []func() Case{fixturesEphemeralRunAsUser}
 }

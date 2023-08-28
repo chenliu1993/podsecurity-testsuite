@@ -74,8 +74,8 @@ func fixturesEphemeralAllowPrivilegeEscalation() Case {
 }
 
 func init() {
-	fixturesMap["privileged"] = []func() Case{fixturesPrivileged}
-	fixturesMap["allowPrivilegeEscalation"] = []func() Case{fixturesAllowPrivilegeEscalation}
-	fixturesMap["ephemeralPrivileged"] = []func() Case{fixturesEphemeralPrivileged}
-	fixturesMap["ephemeralAllowPrivilegeEscalation"] = []func() Case{fixturesEphemeralAllowPrivilegeEscalation}
+	fixturesMap[privileged] = []func() Case{fixturesPrivileged}
+	fixturesMap[allowPrivilegeEscalation] = []func() Case{fixturesAllowPrivilegeEscalation}
+	fixturesMap[ephemeralPrivileged] = []func() Case{fixturesEphemeralPrivileged}
+	fixturesMap[ephemeralAllowPrivilegeEscalation] = []func() Case{fixturesEphemeralAllowPrivilegeEscalation}
 }

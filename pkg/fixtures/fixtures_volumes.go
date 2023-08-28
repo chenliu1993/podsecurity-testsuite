@@ -37,6 +37,6 @@ func fixturesVolumesRestricted() Case {
 }
 
 func init() {
-	fixturesMap["volumes_baseline"] = []func() Case{fixturesVolumesBaseline}
-	fixturesMap["volumes_restricted"] = []func() Case{fixturesVolumesRestricted}
+	fixturesMap[volumesBaseline] = []func() Case{fixturesVolumesBaseline}
+	fixturesMap[volumesRestricted] = []func() Case{fixturesVolumesRestricted}
 }

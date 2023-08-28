@@ -40,6 +40,6 @@ func fixturesEphemeralNonRoot() Case {
 }
 
 func init() {
-	fixturesMap["runAsNonRoot"] = []func() Case{fixturesContainerNonRoot}
-	fixturesMap["ephemeralrunAsNonRoot"] = []func() Case{fixturesEphemeralNonRoot}
+	fixturesMap[runAsNonRoot] = []func() Case{fixturesContainerNonRoot}
+	fixturesMap[ephemeralrunAsNonRoot] = []func() Case{fixturesEphemeralNonRoot}
 }

@@ -112,8 +112,8 @@ func fixturesEphemeralSeccompRestricted() Case {
 }
 
 func init() {
-	fixturesMap["seccomp"] = []func() Case{fixturesSeccompBaseline}
-	fixturesMap["ephemeralSeccomp"] = []func() Case{fixturesEphemeralSeccompBaseline}
-	fixturesMap["seccompRestricted"] = []func() Case{fixturesSeccompRestricted}
-	fixturesMap["ephemeralSeccompRestricted"] = []func() Case{fixturesEphemeralSeccompRestricted}
+	fixturesMap[seccomp] = []func() Case{fixturesSeccompBaseline}
+	fixturesMap[ephemeralSeccomp] = []func() Case{fixturesEphemeralSeccompBaseline}
+	fixturesMap[seccompRestricted] = []func() Case{fixturesSeccompRestricted}
+	fixturesMap[ephemeralSeccompRestricted] = []func() Case{fixturesEphemeralSeccompRestricted}
 }

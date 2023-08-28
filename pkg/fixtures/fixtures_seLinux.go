@@ -68,10 +68,10 @@ func fixturesEphemeralSELinux() Case {
 }
 
 func init() {
-	fixturesMap["selinux"] = []func() Case{
+	fixturesMap[selinux] = []func() Case{
 		fixturesSELinux,
 	}
-	fixturesMap["ephemeralSELinux"] = []func() Case{
+	fixturesMap[ephemeralSELinux] = []func() Case{
 		fixturesEphemeralSELinux,
 	}
 }

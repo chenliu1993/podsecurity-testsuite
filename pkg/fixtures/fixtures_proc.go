@@ -40,6 +40,6 @@ func fixturesEphemeralProcMount() Case {
 }
 
 func init() {
-	fixturesMap["procMount"] = []func() Case{fixturesProcMount}
-	fixturesMap["ephemeralprocMount"] = []func() Case{fixturesEphemeralProcMount}
+	fixturesMap[procMount] = []func() Case{fixturesProcMount}
+	fixturesMap[ephemeralprocMount] = []func() Case{fixturesEphemeralProcMount}
 }

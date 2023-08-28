@@ -1,12 +1,21 @@
 ﻿securityPolicies:
 - namespace: kube-lease
-  policies:
-  - "apparmor"
-  - "seccomp"
-  - "privileged"
-  - "volumes_restricted"
+  enforce:
+    mode: priviledged
+    version: v1.22
+  audit:
+    mode: baseline
+    version: v1.22
+  warn:
+    mode: restricted
+    version: v1.22
 - namespace: default
-  policies:
-  - "apparmor"
-  - "fsGroup"
-  - "sysctls"
+  enforce:
+    mode: priviledged
+    version: v1.22
+  audit:
+    mode: baseline
+    version: v1.22
+  warn:
+    mode: restricted
+    version: v1.22

@@ -67,11 +67,17 @@ func (g *Generator) CapabilitiesAdd(contType string, addSet []corev1.Capability)
 		pod := ensureSecurityContext(g.pod, contType)
 		switch contType {
 		case constants.CONTAINER:
-			pod.Template.Spec.Containers[0].SecurityContext.Capabilities.Add = addSet
+			pod.Template.Spec.Containers[0].SecurityContext.Capabilities = &corev1.Capabilities{
+				Add: addSet,
+			}
 		case constants.INITCONTAINER:
-			pod.Template.Spec.InitContainers[0].SecurityContext.Capabilities.Add = addSet
+			pod.Template.Spec.InitContainers[0].SecurityContext.Capabilities = &corev1.Capabilities{
+				Add: addSet,
+			}
 		case constants.EPHEMERALCONTAINER:
-			pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.Capabilities.Add = addSet
+			pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.Capabilities = &corev1.Capabilities{
+				Add: addSet,
+			}
 		}
 		return pod
 	}
@@ -82,11 +88,17 @@ func (g *Generator) CapabilitiesDrop(contType string, dropSet []corev1.Capabilit
 		pod := ensureSecurityContext(g.pod, contType)
 		switch contType {
 		case constants.CONTAINER:
-			pod.Template.Spec.Containers[0].SecurityContext.Capabilities.Drop = dropSet
+			pod.Template.Spec.Containers[0].SecurityContext.Capabilities = &corev1.Capabilities{
+				Drop: dropSet,
+			}
 		case constants.INITCONTAINER:
-			pod.Template.Spec.InitContainers[0].SecurityContext.Capabilities.Drop = dropSet
+			pod.Template.Spec.InitContainers[0].SecurityContext.Capabilities = &corev1.Capabilities{
+				Drop: dropSet,
+			}
 		case constants.EPHEMERALCONTAINER:
-			pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.Capabilities.Drop = dropSet
+			pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.Capabilities = &corev1.Capabilities{
+				Drop: dropSet,
+			}
 		}
 		return pod
 	}

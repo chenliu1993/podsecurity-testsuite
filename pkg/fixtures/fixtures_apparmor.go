@@ -24,5 +24,5 @@ func fixturesApparmor() Case {
 }
 
 func init() {
-	fixturesMap["apparmor"] = []func() Case{fixturesApparmor}
+	fixturesMap[apparmor] = []func() Case{fixturesApparmor}
 }

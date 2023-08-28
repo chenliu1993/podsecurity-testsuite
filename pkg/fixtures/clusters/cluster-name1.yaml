@@ -1,10 +1,21 @@
 ﻿securityPolicies:
 - namespace: kube-system
-  policies:
-  - "apparmor"
-  - "seccomp"
-  - "privileged"
+  enforce:
+    mode: priviledged
+    version: v1.22
+  audit:
+    mode: baseline
+    version: v1.22
+  warn:
+    mode: restricted
+    version: v1.22
 - namespace: default
-  policies:
-  - "apparmor"
-  - "fsGroup"
+  enforce:
+    mode: priviledged
+    version: v1.22
+  audit:
+    mode: baseline
+    version: v1.22
+  warn:
+    mode: restricted
+    version: v1.22

@@ -11,142 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-var (
-	AddCapBaselinPassSet = []corev1.Capability{
-		"AUDIT_WRITE", "CHOWN", "DAC_OVERRIDE", "FOWNER", "FSETID", "KILL", "MKNOD", "NET_BIND_SERVICE", "SETFCAP", "SETGID", "SETPCAP", "SETUID", "SYS_CHROOT",
-	}
-	AddCapBaselinFailSet = []corev1.Capability{
-		"NET_ADMIN",
-	}
-	AddCapRestrictedPassSet = []corev1.Capability{
-		"NET_BIND_SERVICE",
-	}
-	AddCapRestrictedFailSet = []corev1.Capability{
-		"NET_ADMIN",
-	}
-	DropCapRestrictedPassSet = []corev1.Capability{
-		"ALL",
-	}
-	DropCapRestrictedFailSet = []corev1.Capability{
-		"NET_ADMIN",
-	}
-
-	HostPortBaselinePass = []corev1.ContainerPort{
-		{
-			HostPort: 0,
-		},
-		{
-			ContainerPort: 8080,
-		},
-	}
-
-	HostPortBaselineFail = []corev1.ContainerPort{
-		{
-			HostPort: 12345,
-		},
-		{
-			ContainerPort: 8080,
-			HostPort:      8080,
-		},
-	}
-
-	SysctlsBaselinePass = []corev1.Sysctl{
-		{Name: "kernel.shm_rmid_forced", Value: "0"},
-		{Name: "net.ipv4.ip_local_port_range", Value: "1024 65535"},
-		{Name: "net.ipv4.tcp_syncookies", Value: "0"},
-		{Name: "net.ipv4.ping_group_range", Value: "1 0"},
-		{Name: "net.ipv4.ip_unprivileged_port_start", Value: "1024"},
-	}
-	SysctlsBaselineFail = []corev1.Sysctl{
-		{Name: "other", Value: "other"},
-	}
-
-	VolumesBaselinePass = []corev1.Volume{
-		{Name: "hostpathvolume0", VolumeSource: corev1.VolumeSource{}},
-	}
-	VolumesBaselineFail = []corev1.Volume{
-		{Name: "hostpathvolume1", VolumeSource: corev1.VolumeSource{
-			HostPath: &corev1.HostPathVolumeSource{
-				Path: "test",
-			},
-		}},
-	}
-	VolumesRestrictedPass = []corev1.Volume{
-		{Name: "volume0", VolumeSource: corev1.VolumeSource{}}, // implicit empty dir
-		{Name: "volume1", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}},
-		{Name: "volume2", VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "test"}}},
-		{Name: "volume3", VolumeSource: corev1.VolumeSource{PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: "test"}}},
-		{Name: "volume4", VolumeSource: corev1.VolumeSource{DownwardAPI: &corev1.DownwardAPIVolumeSource{Items: []corev1.DownwardAPIVolumeFile{{Path: "labels", FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.labels"}}}}}},
-		{Name: "volume5", VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{LocalObjectReference: corev1.LocalObjectReference{Name: "test"}}}},
-		{Name: "volume6", VolumeSource: corev1.VolumeSource{Projected: &corev1.ProjectedVolumeSource{Sources: []corev1.VolumeProjection{}}}},
-	}
-
-	// Jusr random choose some type
-	VolumesRestrictedFail = []corev1.Volume{
-		{Name: "volume1", VolumeSource: corev1.VolumeSource{NFS: &corev1.NFSVolumeSource{Server: "test", Path: "/test"}}},
-		{Name: "volume2", VolumeSource: corev1.VolumeSource{GitRepo: &corev1.GitRepoVolumeSource{Repository: "github.com/kubernetes/kubernetes"}}},
-	}
-
-	ContainerT = corev1.SELinuxOptions{
-		Type: "container_t",
-	}
-	ContainerKvmT = corev1.SELinuxOptions{
-		Type: "container_kvm_t",
-	}
-	ContainerInitT = corev1.SELinuxOptions{
-		Type: "container_init_t",
-	}
-	ContainerInitKvmT = corev1.SELinuxOptions{
-		Type: "container_init_kvm_t",
-	}
-	EmptyUserRoleOpts = corev1.SELinuxOptions{
-		User: "",
-		Role: "",
-	}
-	NonemptyUserRoleOpts = corev1.SELinuxOptions{
-		User: "system_u",
-		Role: "system_r",
-	}
-	DefaultProcMount    = corev1.DefaultProcMount
-	UmaskedProcMount    = corev1.UnmaskedProcMount
-	FsGroupBaselinePass = int64(1000)
-	FsGroupBaselineFail = int64(0)
-
-	SupplementalGroupsBaselineFail = []int64{0}
-	SupplementalGroupsBaselinePass = []int64{1000}
-
-	DefaultSeccompProfile    = corev1.SeccompProfile{Type: corev1.SeccompProfileTypeRuntimeDefault}
-	LocalhostProfile         = corev1.SeccompProfile{Type: corev1.SeccompProfileTypeLocalhost}
-	UnconfinedSeccompProfile = corev1.SeccompProfile{Type: corev1.SeccompProfileTypeUnconfined}
-
-	testdataDir = "testdata"
-	clustersDir = "clusters"
-)
-
-var (
-	g *generator.Generator
-
-	serverVersion = "1.21" // This is the last version that pod security policy is supported
-
-	fixturesMap map[string][]func() Case
-)
-
-type Case struct {
-	Name      string
-	Namespace string
-	PassSet   []*corev1.PodTemplate
-	FailSet   []*corev1.PodTemplate
-}
-
-type SecurityPolicy struct {
-	Namespace string   `yaml:"namespace"`
-	Policies  []string `yaml:"policies"`
-}
-
-type SecurityPolicies struct {
-	SecurityPolicies []SecurityPolicy `yaml:"securityPolicies"`
-}
-
 func init() {
 	// init the pod template generator
 	g = generator.NewGenerator()
@@ -184,14 +48,17 @@ func generateClusterSecurityCases(clusterName string, clusterSecurityPolicies Se
 	}
 	for _, securitypolicy := range clusterSecurityPolicies.SecurityPolicies {
 		ns := securitypolicy.Namespace
-		for _, policy := range securitypolicy.Policies {
-			for _, f := range fixturesMap[policy] {
-				c := f()
-				c.Namespace = ns
-				cases = append(cases, c)
-			}
-		}
+		if securitypolicy.Warn != nil {
+			cases = genCasesByMode(cases, securitypolicy.Warn, ns, "warn")
 
+		}
+		if securitypolicy.Enforce != nil {
+			cases = genCasesByMode(cases, securitypolicy.Enforce, ns, "enforce")
+
+		}
+		if securitypolicy.Audit != nil {
+			cases = genCasesByMode(cases, securitypolicy.Audit, ns, "audit")
+		}
 	}
 	for _, tc := range cases {
 		for _, template := range tc.PassSet {
@@ -209,60 +76,62 @@ func generateClusterSecurityCases(clusterName string, clusterSecurityPolicies Se
 }
 
 func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected string, clusterName string) error {
+	if !strings.Contains(name, "enforce") {
+
+		content, err := generator.DeploymentWrapper(podTemplate, ns, name)
+		if err != nil {
+			return err
+		}
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-deploy.yaml"), content)
+		if err != nil {
+			return err
+		}
+		content, err = generator.ReplicaSetWrapper(podTemplate, ns, name)
+		if err != nil {
+			return err
+		}
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-rs.yaml"), content)
+		if err != nil {
+			return err
+		}
+		content, err = generator.ReplicationControllerWrapper(podTemplate, ns, name)
+		if err != nil {
+			return err
+		}
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-rc.yaml"), content)
+		if err != nil {
+			return err
+		}
+		content, err = generator.JobWrapper(podTemplate, ns, name)
+		if err != nil {
+			return err
+		}
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-job.yaml"), content)
+		if err != nil {
+			return err
+		}
+		content, err = generator.CronJobWrapper(podTemplate, ns, name)
+		if err != nil {
+			return err
+		}
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-cj.yaml"), content)
+		if err != nil {
+			return err
+		}
+		content, err = generator.DaemonsetWrapper(podTemplate, ns, name)
+		if err != nil {
+			return err
+		}
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-ds.yaml"), content)
+		if err != nil {
+			return err
+		}
+	}
 	content, err := generator.PodWrapper(podTemplate, ns, name)
 	if err != nil {
 		return err
 	}
-
 	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-pod.yaml"), content)
-	if err != nil {
-		return err
-	}
-	content, err = generator.DeploymentWrapper(podTemplate, ns, name)
-	if err != nil {
-		return err
-	}
-	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-deploy.yaml"), content)
-	if err != nil {
-		return err
-	}
-	content, err = generator.ReplicaSetWrapper(podTemplate, ns, name)
-	if err != nil {
-		return err
-	}
-	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-rs.yaml"), content)
-	if err != nil {
-		return err
-	}
-	content, err = generator.ReplicationControllerWrapper(podTemplate, ns, name)
-	if err != nil {
-		return err
-	}
-	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-rc.yaml"), content)
-	if err != nil {
-		return err
-	}
-	content, err = generator.JobWrapper(podTemplate, ns, name)
-	if err != nil {
-		return err
-	}
-	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-job.yaml"), content)
-	if err != nil {
-		return err
-	}
-	content, err = generator.CronJobWrapper(podTemplate, ns, name)
-	if err != nil {
-		return err
-	}
-	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-cj.yaml"), content)
-	if err != nil {
-		return err
-	}
-	content, err = generator.DaemonsetWrapper(podTemplate, ns, name)
-	if err != nil {
-		return err
-	}
-	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-ds.yaml"), content)
 	if err != nil {
 		return err
 	}
@@ -292,4 +161,16 @@ func checkExpectedDir(subdir string) error {
 		return err
 	}
 	return nil
+}
+
+func genCasesByMode(cases []Case, standatd *Standard, ns, level string) []Case {
+	for _, securityFocus := range testSets[standatd.Mode] {
+		for _, f := range fixturesMap[securityFocus] {
+			c := f()
+			c.Name = c.Name + "-" + level
+			c.Namespace = ns
+			cases = append(cases, c)
+		}
+	}
+	return cases
 }

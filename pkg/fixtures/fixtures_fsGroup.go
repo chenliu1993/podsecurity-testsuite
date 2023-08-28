@@ -19,5 +19,5 @@ func fixturesFsGroup() Case {
 }
 
 func init() {
-	fixturesMap["fsgroup"] = []func() Case{fixturesFsGroup}
+	fixturesMap[fsGroup] = []func() Case{fixturesFsGroup}
 }
