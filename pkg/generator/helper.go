@@ -3,7 +3,6 @@ package generator
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -171,20 +170,20 @@ func DaemonsetWrapper(obj *corev1.PodTemplate, ns, name string) ([]byte, error) 
 }
 
 func CronJobWrapper(obj *corev1.PodTemplate, ns, name string) ([]byte, error) {
-	cj := &batchv1beta1.CronJob{
+	cj := &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name + "-cj",
 			Namespace: ns,
 		},
-		Spec: batchv1beta1.CronJobSpec{
-			JobTemplate: batchv1beta1.JobTemplateSpec{
+		Spec: batchv1.CronJobSpec{
+			JobTemplate: batchv1.JobTemplateSpec{
 				Spec: batchv1.JobSpec{
 					Template: obj.Template,
 				},
 			},
 		},
 	}
-	content, err := runtime.Encode(scheme.Codecs.LegacyCodec(batchv1beta1.SchemeGroupVersion), cj)
+	content, err := runtime.Encode(scheme.Codecs.LegacyCodec(batchv1.SchemeGroupVersion), cj)
 	if err != nil {
 		return nil, err
 	}

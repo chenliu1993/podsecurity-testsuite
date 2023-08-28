@@ -82,7 +82,7 @@ func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected strin
 		if err != nil {
 			return err
 		}
-		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-deploy.yaml"), content)
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, expected+"-"+name+"-deploy.yaml"), content)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected strin
 		if err != nil {
 			return err
 		}
-		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-rs.yaml"), content)
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, expected+"-"+name+"rs.yaml"), content)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected strin
 		if err != nil {
 			return err
 		}
-		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-rc.yaml"), content)
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, expected+"-"+name+"-rc.yaml"), content)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected strin
 		if err != nil {
 			return err
 		}
-		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-job.yaml"), content)
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, expected+"-"+name+"-job.yaml"), content)
 		if err != nil {
 			return err
 		}
@@ -114,7 +114,7 @@ func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected strin
 		if err != nil {
 			return err
 		}
-		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-cj.yaml"), content)
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, expected+"-"+name+"-cj.yaml"), content)
 		if err != nil {
 			return err
 		}
@@ -122,7 +122,7 @@ func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected strin
 		if err != nil {
 			return err
 		}
-		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-ds.yaml"), content)
+		err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, expected+"-"+name+"-ds.yaml"), content)
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func generateCaseFiles(podTemplate *corev1.PodTemplate, ns, name, expected strin
 	if err != nil {
 		return err
 	}
-	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, name+"-pod.yaml"), content)
+	err = files.WriteFile(filepath.Join(testdataDir, clusterName, expected, expected+"-"+name+"-pod.yaml"), content)
 	if err != nil {
 		return err
 	}
@@ -173,4 +173,9 @@ func genCasesByMode(cases []Case, standatd *Standard, ns, level string) []Case {
 		}
 	}
 	return cases
+}
+
+func getExpectedResult(name string) string {
+	items := strings.Split(name, "-")
+	return items[0]
 }
