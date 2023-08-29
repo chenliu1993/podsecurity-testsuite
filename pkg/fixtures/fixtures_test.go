@@ -9,12 +9,6 @@ import (
 )
 
 func TestFixtures(t *testing.T) {
-	// Get cluster name
-	name := os.Getenv("CLUSTER")
-	if name == "" {
-		name = "jpe"
-
-	}
 	// Get server version
 	version, err := getServerVersion()
 	if err != nil {
@@ -25,7 +19,7 @@ func TestFixtures(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = GenerateCases(name, namespaces)
+		err = GenerateCases(namespaces)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -40,7 +34,7 @@ func TestFixtures(t *testing.T) {
 			if err != nil {
 				errs = append(errs, err)
 			}
-			_, err = cli.Kubectl(content, "apply", "-f", "-")
+			_, err = cli.Kubectl(content, "apply", "-f", "-", "--dry-run=server")
 			if err != nil {
 				errs = append(errs, err)
 			}

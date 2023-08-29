@@ -145,33 +145,35 @@ func (g *Generator) HostPort(contType string, hostport []corev1.ContainerPort) f
 
 // Proviledged sets if containers can be privileged
 // baseline/restricted: nil/false
-func (g *Generator) Privileged(allow bool, contType string) func() *corev1.PodTemplate {
+func (g *Generator) Privileged(allow *bool, contType string) func() *corev1.PodTemplate {
 	return func() *corev1.PodTemplate {
-		pod := ensureSecurityContext(g.pod, contType)
 		switch contType {
 		case constants.CONTAINER:
-			pod.Template.Spec.Containers[0].SecurityContext.Privileged = pointer.Bool(allow)
+			g.pod.Template.Spec.Containers[0].SecurityContext.Privileged = allow
 		case constants.INITCONTAINER:
-			pod.Template.Spec.InitContainers[0].SecurityContext.Privileged = pointer.Bool(allow)
+			g.pod.Template.Spec.InitContainers[0].SecurityContext.Privileged = allow
 		case constants.EPHEMERALCONTAINER:
-			pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.Privileged = pointer.Bool(allow)
+			g.pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.Privileged = allow
+		default:
+			// do nothing just return as it is
 		}
-		return pod
+		return g.pod
 	}
 }
 
-func (g *Generator) AllowPrivilegeEscalation(allow bool, contType string) func() *corev1.PodTemplate {
+func (g *Generator) AllowPrivilegeEscalation(allow *bool, contType string) func() *corev1.PodTemplate {
 	return func() *corev1.PodTemplate {
-		pod := ensureSecurityContext(g.pod, contType)
 		switch contType {
 		case constants.CONTAINER:
-			pod.Template.Spec.Containers[0].SecurityContext.AllowPrivilegeEscalation = pointer.Bool(allow)
+			g.pod.Template.Spec.Containers[0].SecurityContext.AllowPrivilegeEscalation = allow
 		case constants.INITCONTAINER:
-			pod.Template.Spec.InitContainers[0].SecurityContext.AllowPrivilegeEscalation = pointer.Bool(allow)
+			g.pod.Template.Spec.InitContainers[0].SecurityContext.AllowPrivilegeEscalation = allow
 		case constants.EPHEMERALCONTAINER:
-			pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.AllowPrivilegeEscalation = pointer.Bool(allow)
+			g.pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext.AllowPrivilegeEscalation = allow
+		default:
+			// do nothing just return as it is
 		}
-		return pod
+		return g.pod
 	}
 }
 
@@ -295,28 +297,23 @@ func (g *Generator) SupplementalGroups(group []int64) func() *corev1.PodTemplate
 	}
 }
 
-func ensureSecurityContext(pod *corev1.PodTemplate, contType string) *corev1.PodTemplate {
-	pod = pod.DeepCopy()
-	switch contType {
-	case constants.POD:
-		if pod.Template.Spec.SecurityContext == nil {
-			pod.Template.Spec.SecurityContext = &corev1.PodSecurityContext{}
-		}
-	case constants.CONTAINER:
-		for i := range pod.Template.Spec.Containers {
-			if pod.Template.Spec.Containers[i].SecurityContext == nil {
-				pod.Template.Spec.Containers[i].SecurityContext = &corev1.SecurityContext{}
-			}
-		}
-	case constants.INITCONTAINER:
-		for i := range pod.Template.Spec.InitContainers {
-			if pod.Template.Spec.InitContainers[i].SecurityContext == nil {
-				pod.Template.Spec.InitContainers[i].SecurityContext = &corev1.SecurityContext{}
-			}
-		}
-	case constants.EPHEMERALCONTAINER:
-		pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext = &corev1.SecurityContext{}
-
+func (g *Generator) EnsureSecurityContext() *corev1.PodTemplate {
+	pod := g.pod.DeepCopy()
+	if pod.Template.Spec.SecurityContext == nil {
+		pod.Template.Spec.SecurityContext = &corev1.PodSecurityContext{}
 	}
+
+	for i := range pod.Template.Spec.Containers {
+		if pod.Template.Spec.Containers[i].SecurityContext == nil {
+			pod.Template.Spec.Containers[i].SecurityContext = &corev1.SecurityContext{}
+		}
+	}
+	for i := range pod.Template.Spec.InitContainers {
+		if pod.Template.Spec.InitContainers[i].SecurityContext == nil {
+			pod.Template.Spec.InitContainers[i].SecurityContext = &corev1.SecurityContext{}
+		}
+	}
+	pod.Template.Spec.EphemeralContainers[0].EphemeralContainerCommon.SecurityContext = &corev1.SecurityContext{}
+
 	return pod
 }

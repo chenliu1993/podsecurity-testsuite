@@ -41,6 +41,10 @@ func (g *Generator) SetPod(pod *corev1.PodTemplate) {
 	g.pod = pod
 }
 
+func (g *Generator) GetPod() *corev1.PodTemplate {
+	return g.pod
+}
+
 // Overlay takes a base pod and a list of functions that modify the pod
 // if there is conflict then the later wins
 func (g *Generator) Overlay(modifiers []func() *corev1.PodTemplate) *corev1.PodTemplate {
