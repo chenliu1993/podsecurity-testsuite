@@ -7,7 +7,7 @@ import (
 
 func fixturesSeccompBaseline() Case {
 	return Case{
-		Name: "seccomp",
+		Name: "seccomp-baseline",
 		PassSet: []*corev1.PodTemplate{
 			g.Overlay([]func() *corev1.PodTemplate{
 				g.Seccomp(constants.POD, &DefaultSeccompProfile),
@@ -32,7 +32,7 @@ func fixturesSeccompBaseline() Case {
 
 func fixturesEphemeralSeccompBaseline() Case {
 	return Case{
-		Name: "ephemeral-seccomp",
+		Name: "ephemeral-seccomp-baseline",
 		PassSet: []*corev1.PodTemplate{
 			g.Overlay([]func() *corev1.PodTemplate{
 				g.Seccomp(constants.EPHEMERALCONTAINER, &DefaultSeccompProfile),
@@ -48,7 +48,7 @@ func fixturesEphemeralSeccompBaseline() Case {
 
 func fixturesSeccompRestricted() Case {
 	return Case{
-		Name: "Seccomp",
+		Name: "seccomp-restricted",
 		PassSet: []*corev1.PodTemplate{
 			g.Overlay([]func() *corev1.PodTemplate{
 				g.Seccomp(constants.POD, &DefaultSeccompProfile),
@@ -83,7 +83,7 @@ func fixturesSeccompRestricted() Case {
 
 func fixturesEphemeralSeccompRestricted() Case {
 	return Case{
-		Name: "EphemeralSeccomp",
+		Name: "ephemeral-seccomp-restricted",
 		PassSet: []*corev1.PodTemplate{
 			g.Overlay([]func() *corev1.PodTemplate{
 				g.Seccomp(constants.POD, &DefaultSeccompProfile),

@@ -1,14 +1,14 @@
 package fixtures
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/chenliu1993/podsecurity-check/pkg/cli"
 	"github.com/chenliu1993/podsecurity-check/pkg/files"
 	"github.com/chenliu1993/podsecurity-check/pkg/generator"
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 )
 
 func init() {
@@ -19,25 +19,16 @@ func init() {
 }
 
 // Caller should make sure the path is absolute to fixtures.
-func GenerateCases() error {
-	var clusterSecurityPolicies SecurityPolicies
-	clustersList, err := files.WalkPath(filepath.Join(clustersDir))
-	if err != nil {
+func GenerateCases(clusterName string, namespaces map[string]map[string]string) error {
+	clusterSecurityPolicies := convertNamespacesIntoSecurityPolicy(namespaces)
+	if len(clusterSecurityPolicies.SecurityPolicies) == 0 {
+		return nil
+	}
+
+	if err := generateClusterSecurityCases(clusterName, clusterSecurityPolicies); err != nil {
 		return err
 	}
-	for _, clusterItem := range clustersList {
-		yamlData, err := os.ReadFile(clusterItem)
-		if err != nil {
-			return err
-		}
-		err = yaml.Unmarshal(yamlData, &clusterSecurityPolicies)
-		if err != nil {
-			return err
-		}
-		if err := generateClusterSecurityCases(strings.TrimSuffix(filepath.Base(clusterItem), filepath.Ext(clusterItem)), clusterSecurityPolicies); err != nil {
-			return err
-		}
-	}
+
 	return nil
 }
 
@@ -178,4 +169,80 @@ func genCasesByMode(cases []Case, standatd *Standard, ns, level string) []Case {
 func getExpectedResult(name string) string {
 	items := strings.Split(name, "-")
 	return items[0]
+}
+
+// This function should be called for psa
+func GetNamespaceWithSecurityLabels() (map[string]map[string]string, error) {
+	nsData, err := cli.Kubectl(nil, "get", "namespace", "-o", "yaml")
+	if err != nil {
+		return nil, err
+	}
+	var nsList corev1.NamespaceList
+	err = yaml.Unmarshal([]byte(nsData), &nsList)
+	if err != nil {
+		return nil, err
+	}
+	nsLabels := make(map[string]map[string]string)
+	for _, ns := range nsList.Items {
+		nsLabels[ns.Name] = getPSALabels(ns.Labels)
+	}
+	return nsLabels, nil
+}
+
+func getPSALabels(labels map[string]string) map[string]string {
+	psaLabels := make(map[string]string)
+	for k, v := range labels {
+		if strings.HasPrefix(k, "pod-security.kubernetes.io/") {
+			psaLabels[k] = v
+		}
+	}
+	if len(psaLabels) == 0 {
+		return nil
+	}
+	return psaLabels
+}
+
+func getServerVersion() (string, error) {
+	data, err := cli.Kubectl(nil, "version")
+	if err != nil {
+		return "", err
+	}
+	serverVersionLine := strings.Split(data, "\n")[2]
+	return strings.Split(serverVersionLine, " ")[2], nil
+}
+
+func convertNamespacesIntoSecurityPolicy(namespaces map[string]map[string]string) SecurityPolicies {
+	clusterSecurityPolicies := SecurityPolicies{
+		SecurityPolicies: []SecurityPolicy{},
+	}
+	for ns, labels := range namespaces {
+		if labels == nil {
+			// This namespace will be skipped because no pod security labels are set.
+			continue
+		}
+		securityPolicy := SecurityPolicy{
+			Enforce: &Standard{},
+			Audit:   &Standard{},
+			Warn:    &Standard{},
+		}
+		securityPolicy.Namespace = ns
+		for k, v := range labels {
+			switch strings.TrimPrefix(k, "pod-security.kubernetes.io/") {
+			case "enforce":
+				securityPolicy.Enforce.Mode = v
+			case "audit":
+				securityPolicy.Audit.Mode = v
+			case "warn":
+				securityPolicy.Warn.Mode = v
+			case "enforce-version":
+				securityPolicy.Enforce.Version = v
+			case "audit-version":
+				securityPolicy.Audit.Version = v
+			case "warn-version":
+				securityPolicy.Warn.Version = v
+			}
+		}
+		clusterSecurityPolicies.SecurityPolicies = append(clusterSecurityPolicies.SecurityPolicies, securityPolicy)
+	}
+	return clusterSecurityPolicies
 }
