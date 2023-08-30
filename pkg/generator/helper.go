@@ -28,32 +28,24 @@ func GetBasePod() *corev1.PodTemplate {
 }
 
 type Generator struct {
-	pod *corev1.PodTemplate
+	Pod *corev1.PodTemplate
 }
 
 func NewGenerator() *Generator {
 	return &Generator{
-		pod: basepod.DeepCopy(),
+		Pod: basepod.DeepCopy(),
 	}
-}
-
-func (g *Generator) SetPod(pod *corev1.PodTemplate) {
-	g.pod = pod
-}
-
-func (g *Generator) GetPod() *corev1.PodTemplate {
-	return g.pod
 }
 
 // Overlay takes a base pod and a list of functions that modify the pod
 // if there is conflict then the later wins
-func (g *Generator) Overlay(modifiers []func() *corev1.PodTemplate) *corev1.PodTemplate {
-	g.SetPod(basepod)
-	modified := g.pod.DeepCopy()
+func (g *Generator) Overlay(modifiers []func(*corev1.PodTemplate) *corev1.PodTemplate) *corev1.PodTemplate {
+	g.Pod = basepod
+	modified := g.Pod.DeepCopy()
 	for _, fn := range modifiers {
-		modified = fn()
+		modified = fn(modified)
 	}
-	g.pod = modified
+	g.Pod = modified
 	return modified
 }
 
@@ -237,4 +229,44 @@ func PodWrapper(obj *corev1.PodTemplate, ns, name string) ([]byte, error) {
 		return nil, err
 	}
 	return yamlData, nil
+}
+
+func EnsureSecurityContext(pod *corev1.PodTemplate) *corev1.PodTemplate {
+	pod = pod.DeepCopy()
+	if pod.Template.Spec.SecurityContext == nil {
+		pod.Template.Spec.SecurityContext = &corev1.PodSecurityContext{}
+	}
+
+	for i := range pod.Template.Spec.Containers {
+		if pod.Template.Spec.Containers[i].SecurityContext == nil {
+			pod.Template.Spec.Containers[i].SecurityContext = &corev1.SecurityContext{}
+		}
+	}
+	for i := range pod.Template.Spec.InitContainers {
+		if pod.Template.Spec.InitContainers[i].SecurityContext == nil {
+			pod.Template.Spec.InitContainers[i].SecurityContext = &corev1.SecurityContext{}
+		}
+	}
+
+	return pod
+
+}
+
+// pls call ensureSecurityContext before calling this
+func EnsureSELinuxOptions(pod *corev1.PodTemplate) *corev1.PodTemplate {
+	pod = pod.DeepCopy()
+	if pod.Template.Spec.SecurityContext.SELinuxOptions == nil {
+		pod.Template.Spec.SecurityContext.SELinuxOptions = &corev1.SELinuxOptions{}
+	}
+	for i := range pod.Template.Spec.Containers {
+		if pod.Template.Spec.Containers[i].SecurityContext.SELinuxOptions == nil {
+			pod.Template.Spec.Containers[i].SecurityContext.SELinuxOptions = &corev1.SELinuxOptions{}
+		}
+	}
+	for i := range pod.Template.Spec.InitContainers {
+		if pod.Template.Spec.InitContainers[i].SecurityContext.SELinuxOptions == nil {
+			pod.Template.Spec.InitContainers[i].SecurityContext.SELinuxOptions = &corev1.SELinuxOptions{}
+		}
+	}
+	return pod
 }

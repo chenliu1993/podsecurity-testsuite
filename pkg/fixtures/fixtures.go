@@ -34,7 +34,7 @@ func GenerateCases(namespaces map[string]map[string]string) error {
 
 func generateClusterSecurityCases(clusterSecurityPolicies SecurityPolicies) error {
 	var cases []Case
-	if err := checkExpectedDir(testdataDir); err != nil {
+	if err := checkExpectedDir(""); err != nil {
 		return err
 	}
 	for _, securitypolicy := range clusterSecurityPolicies.SecurityPolicies {

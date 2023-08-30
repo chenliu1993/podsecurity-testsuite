@@ -6,18 +6,38 @@ import (
 
 func fixturesApparmor() Case {
 	return Case{
-		Name: "apparmor",
+		Name:   "apparmor",
+		ErrMsg: "forbidden AppArmor profile",
 		PassSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.AppArmorProfile("runtime/default"),
-			}),
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.AppArmorProfile("local/bar"),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					if pod.Annotations == nil {
+						pod.Annotations = make(map[string]string)
+					}
+					pod.Annotations[corev1.AppArmorBetaContainerAnnotationKeyPrefix+pod.Template.Spec.Containers[0].Name] = "runtime/default"
+					pod.Annotations[corev1.AppArmorBetaContainerAnnotationKeyPrefix+pod.Template.Spec.InitContainers[0].Name] = "localhost/foo"
+					return pod
+				},
 			}),
 		},
 		FailSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.AppArmorProfile("runtime/other"),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					if pod.Annotations == nil {
+						pod.Annotations = make(map[string]string)
+					}
+					pod.Annotations[corev1.AppArmorBetaContainerAnnotationKeyPrefix+pod.Template.Spec.Containers[0].Name] = "unconfined"
+					return pod
+				},
+			}),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					if pod.Annotations == nil {
+						pod.Annotations = make(map[string]string)
+					}
+					pod.Annotations[corev1.AppArmorBetaContainerAnnotationKeyPrefix+pod.Template.Spec.InitContainers[0].Name] = "unconfined"
+					return pod
+				},
 			}),
 		},
 	}

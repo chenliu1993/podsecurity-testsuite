@@ -1,21 +1,27 @@
 package fixtures
 
 import (
-	"github.com/chenliu1993/podsecurity-check/pkg/constants"
 	corev1 "k8s.io/api/core/v1"
 )
 
 func fixturesHostPID() Case {
 	return Case{
-		Name: "hostPID",
+		Name:   "hostPID",
+		ErrMsg: "host namespaces",
 		PassSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostPID(false),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.HostPID = false
+					return pod
+				},
 			}),
 		},
 		FailSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostPID(true),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.HostPID = true
+					return pod
+				},
 			}),
 		},
 	}
@@ -23,15 +29,22 @@ func fixturesHostPID() Case {
 
 func fixturesHostIPC() Case {
 	return Case{
-		Name: "hostIPC",
+		Name:   "hostIPC",
+		ErrMsg: "host namespaces",
 		PassSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostIPC(false),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.HostIPC = false
+					return pod
+				},
 			}),
 		},
 		FailSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostIPC(true),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.HostIPC = true
+					return pod
+				},
 			}),
 		},
 	}
@@ -39,15 +52,22 @@ func fixturesHostIPC() Case {
 
 func fixturesHostNetwork() Case {
 	return Case{
-		Name: "hostNetwork",
+		Name:   "hostNetwork",
+		ErrMsg: "host namespaces",
 		PassSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostNetwork(false),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.HostNetwork = false
+					return pod
+				},
 			}),
 		},
 		FailSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostNetwork(true),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.HostNetwork = true
+					return pod
+				},
 			}),
 		},
 	}
@@ -55,33 +75,75 @@ func fixturesHostNetwork() Case {
 
 func fixturesConainerHostPorts() Case {
 	return Case{
-		Name: "hostports",
+		Name:   "hostports",
+		ErrMsg: "hostPort",
 		PassSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostPort(constants.CONTAINER, HostPortBaselinePass),
-				g.HostPort(constants.INITCONTAINER, HostPortBaselinePass),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
+						{
+							ContainerPort: 65535,
+						},
+					}
+					pod.Template.Spec.InitContainers[0].Ports = []corev1.ContainerPort{
+						{
+							ContainerPort: 65535,
+						},
+					}
+					return pod
+				},
 			}),
 		},
 		FailSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostPort(constants.CONTAINER, HostPortBaselinePass),
-				g.HostPort(constants.INITCONTAINER, HostPortBaselinePass),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
+						{
+							ContainerPort: 65535,
+							HostPort:      65535,
+						},
+					}
+					return pod
+				},
 			}),
-		},
-	}
-}
-
-func fixturesEphemeralHostPorts() Case {
-	return Case{
-		Name: "ephemeral-hostports",
-		PassSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostPort(constants.EPHEMERALCONTAINER, HostPortBaselinePass),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.InitContainers[0].Ports = []corev1.ContainerPort{
+						{
+							ContainerPort: 65535,
+							HostPort:      65535,
+						},
+					}
+					return pod
+				},
 			}),
-		},
-		FailSet: []*corev1.PodTemplate{
-			g.Overlay([]func() *corev1.PodTemplate{
-				g.HostPort(constants.EPHEMERALCONTAINER, HostPortBaselinePass),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
+						{
+							ContainerPort: 65535,
+							HostPort:      65535,
+						},
+						{
+							ContainerPort: 4444,
+						},
+					}
+					return pod
+				},
+			}),
+			g.Overlay([]func(*corev1.PodTemplate) *corev1.PodTemplate{
+				func(pod *corev1.PodTemplate) *corev1.PodTemplate {
+					pod.Template.Spec.InitContainers[0].Ports = []corev1.ContainerPort{
+						{
+							ContainerPort: 65535,
+							HostPort:      65535,
+						},
+						{
+							ContainerPort: 4444,
+						},
+					}
+					return pod
+				},
 			}),
 		},
 	}
@@ -92,5 +154,4 @@ func init() {
 	fixturesMap[hostipc] = []func() Case{fixturesHostIPC}
 	fixturesMap[hostnetwork] = []func() Case{fixturesHostNetwork}
 	fixturesMap[hostports] = []func() Case{fixturesConainerHostPorts}
-	fixturesMap[ephemeralHostports] = []func() Case{fixturesEphemeralHostPorts}
 }
